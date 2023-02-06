@@ -1,15 +1,9 @@
-# Note
-I like being able to make blog posts with markdown and git, however I'll have to plan some things out before jekyll can fully replace my current system.
+# [DVTT](https://dvtt.net) Blog
+I don't often have the energy to sit down and write a blog post but when I do I'll at least link to them here. If this changes I'll probably use something different for distributing posts.
 
 ------
-# Testing 2
-2019-10-20T00:19:58.883Z
+[State of Postfix Haskell - May 2022](ph.2022.5.6)
+2022.05.06
 
-Hi this is another test :D
+This was originally posted to [wasm.builders](https://www.wasm.builders/dvtate/functional-language-which-compiles-to-wasm-1k0k) giving a brief overview of some of the challenges I've faced while making a language which compiles to WebAssembly.
 
-------
-
-# Testing
-2019-10-20T00:19:38.883Z
-
-Hi this is a test :D
