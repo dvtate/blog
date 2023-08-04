@@ -29,13 +29,11 @@ Kribensis are one of the easiest fish to breed – so easy in fact when I was as
 Kribensis are hardcore cave-spawners, as soon as they finish acclimating to a tank they will start exploring it looking for caves and will excivate under tank decorations to make more caves. But even without a cave they've been known to spawn.
 
 ## Behaviors
-- scraping the ground
+- geophagy
 - mating dance
 - shake when scared
 - vertical vs horizontal stripes for dominance
 - pseudo-mouth-brooding
-- 
-
 
 
 ## Tank Mates
