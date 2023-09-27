@@ -26,4 +26,5 @@ The final step before the article is published is that a human can skim it and c
 ### Static site generation
 Finally, the articles in the database are converted into a complete static html website.
 
-
+---------
+You can also find this post [here](https://dev.to/dvtt/research-in-english-39ff)
