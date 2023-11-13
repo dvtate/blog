@@ -18,7 +18,7 @@ Because PDF is not particularly conducive to automated reading systems (ie - col
 - copy and paste sections from the paper (usually just a few fields)
 
 ### Writing Articles
-After we the paper in an AI friendly format we use OpenAI's API to generate the article, headline, description, etc.
+After we convert the paper into an AI friendly format we use OpenAI's API to generate the article, headline, description, etc.
 
 ### Manual Review
 The final step before the article is published is that a human can skim it and choose a relevant thumbnail.
