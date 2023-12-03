@@ -392,7 +392,7 @@ Made the list demo more interesting, also I started towards improving the memory
 ![image](https://user-images.githubusercontent.com/15305612/257646523-bd259094-f874-4696-957a-4210f0406e72.png)
 ![image](https://user-images.githubusercontent.com/15305612/257646538-0be5a399-a59d-4882-97d7-89e6c41d4b57.png)
 
-## 2022.10.26 - Lost of optimism for project
+## 2022.10.26 - Lost optimism for project
 I don't forsee this language fulfilling my original goals (ie - bad fit for target use case) but it's so far along at this point that I kinda want to just keep working on it so I can do cooler demos. But would be nice to have a new long-term side-project.
 
 ![Screenshot from 2023-08-01 16-32-33](https://user-images.githubusercontent.com/15305612/257647048-d4cc3c1a-7713-4256-977d-c038af303a74.png)
