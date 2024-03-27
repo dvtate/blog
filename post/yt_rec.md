@@ -7,7 +7,8 @@ For better or for worse, I waste a lot of time watching YouTube. I do have a lou
 ## Educational
 - [Atomic frontier](https://www.youtube.com/@AtomicFrontier)
 - [Un mundo inmenso](https://www.youtube.com/@UnMundoInmenso)
-- [Langfocus](https://www.youtube.com/@Langfocus)
+- [Fermilab](https://www.youtube.com/@fermilab)
+- [Illinois Energy Prof.](https://www.youtube.com/@illinoisenergyprof6878)
 - [Atlas Pro](https://www.youtube.com/@AtlasPro1)
 - [The B1M](https://www.youtube.com/@TheB1M)
 - [PBS Nova](https://www.youtube.com/@novapbs)
@@ -27,4 +28,4 @@ For better or for worse, I waste a lot of time watching YouTube. I do have a lou
 - [Jay Foreman](https://www.youtube.com/@JayForeman)
 - [_magnify](https://www.youtube.com/@_magnify)
 - [Myron Cook](https://www.youtube.com/@myroncook)
-- [Un mundo inmenso](https://www.youtube.com/@UnMundoInmenso)
+- [Langfocus](https://www.youtube.com/@Langfocus)
