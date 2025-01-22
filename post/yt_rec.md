@@ -5,6 +5,7 @@ For better or for worse, I waste a lot of time watching YouTube. I do have a lou
 - [Dustin Van Tate Testa](https://youtube.com/@dvtt)
 
 ## Educational
+- [Tom Scott](https://www.youtube.com/@TomScottGo)
 - [Atomic frontier](https://www.youtube.com/@AtomicFrontier)
 - [Un mundo inmenso](https://www.youtube.com/@UnMundoInmenso)
 - [Fermilab](https://www.youtube.com/@fermilab)
@@ -18,11 +19,11 @@ For better or for worse, I waste a lot of time watching YouTube. I do have a lou
 - [Geography Now](https://www.youtube.com/@GeographyNow)
 - [Real Life Lore](https://www.youtube.com/@RealLifeLore)
 - [Wendover Productions](https://www.youtube.com/@Wendoverproductions)
-- [Nile red](https://www.youtube.com/@NileRed)
+- [Nile Red](https://www.youtube.com/@NileRed)
 - [Sabine Hossenfelder](https://www.youtube.com/@SabineHossenfelder)
 - [3blue1brown](https://www.youtube.com/@3blue1brown)
-- [Numberphile](https://www.youtube.com/@numberphile)
 - [Computerphile](https://www.youtube.com/@Computerphile)
+- [Numberphile](https://www.youtube.com/@numberphile)
 - [Crime Pays But Botany Doesn't](https://www.youtube.com/@CrimePaysButBotanyDoesnt)
 - [Explosions & Fire](https://www.youtube.com/@ExplosionsAndFire)
 - [Jay Foreman](https://www.youtube.com/@JayForeman)

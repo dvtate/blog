@@ -3,6 +3,11 @@ I don't often have the energy to sit down and write a blog post but when I do I'
 
 ------
 
+[The history of Corki Bot](post/corki_bot)
+2025.01.22
+
+Brief overview of the history of the [Corki Discord Bot](https://corki.js.org) which was in operation 2018 - 2024.
+
 [Postfix Haskell Devlog - 2020 - 2023](post/ph_dl)
 2023.08.01
 
