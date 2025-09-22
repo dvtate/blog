@@ -1,3 +1,11 @@
+---
+layout: post
+title: "Postfix Haskell 2022.5.6"
+date: 2022-05-06 19:15:00 -0500
+categories: [article,software,devlog]
+tags: [article,software,devlog,programming languages]
+---
+
 # Postfix Haskell 2022.5.6
 
 For the past 2 years in my freetime I've been working on a [postfix, functional programming langauge which compiles to webassembly](https://github.com/dvtate/postfix-haskell). Admittedlty it still has a good ways to go before it's usable for my intended purposes and even further to go before it's production ready. But I've at least been able to use it to make [some small demos](https://github.com/dvtate/phlappy-bird).
