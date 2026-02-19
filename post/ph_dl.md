@@ -71,7 +71,7 @@ Recursion was a big painpoint... I came up with a way to implement it while taki
 ![image](https://user-images.githubusercontent.com/15305612/257621366-ac6bc6cb-2f1b-4d4d-bd17-0a2dc75a335b.png)
 ![image](https://user-images.githubusercontent.com/15305612/257621391-6b3e6ce9-5c69-49d8-bf93-99a3b58551a9.png)
 
-## 2020.12.28 - Copiling to WebAssembly
+## 2020.12.28 - Compiling to WebAssembly
 ![image](https://user-images.githubusercontent.com/15305612/257621503-c4ded600-cb57-422b-9362-2a3626bf7c3a.png)
 ![image](https://user-images.githubusercontent.com/15305612/257621593-d8ee09cf-0224-45df-9ffa-05e6404d3c68.png)
 
@@ -108,7 +108,7 @@ ocaml has a "rec" specifier for functions, if I were to adopt something this it 
 This only supported tail recursion.
 
 ## 2021.5.2 - String Literals
-Some thinking was done to plan out the optimal way to pack the data for string literals into linear memory in order to reduce duplication. Strings are implemented as a pointer + an length as opposed to being null-terminated like in C.
+Some thinking was done to plan out the optimal way to pack the data for string literals into linear memory in order to reduce duplication. Strings are implemented as a pointer + length as opposed to being null-terminated like in C.
 
 ![image](https://user-images.githubusercontent.com/15305612/257625532-2c98927a-f308-46a4-bfb3-b821d96bac77.png)
 ![image](https://user-images.githubusercontent.com/15305612/257625556-29c4e51d-37c7-41ff-8a5a-47dbbd012ee2.png)
@@ -197,15 +197,15 @@ So I wanted a really niche compiler macro that gave me some relevant data for de
 ![image](https://user-images.githubusercontent.com/15305612/257630779-9c9efde6-a34c-4659-9981-aab0c6c76de0.png)
 ![image](https://user-images.githubusercontent.com/15305612/257630801-a62ac535-890a-4f79-85a4-8a7388208c3b.png)
 
-## 2021.9.17 - Breakout/single player pong - https://github.com/dvtate/breakout
+## 2021.9.17 - [Breakout/single player pong](https://github.com/dvtate/breakout)
 ![Screenshot from 2023-08-01 15-20-30](https://user-images.githubusercontent.com/15305612/257632027-dd78a73d-d4aa-41db-ab2c-1881c2bef3ee.png)
 
-## 2021.10.2 - Flappy bird clone demo - https://github.com/dvtate/phlappy-bird
+## 2021.10.2 - [Flappy bird clone demo](https://github.com/dvtate/phlappy-bird)
 ![image](https://user-images.githubusercontent.com/15305612/257631521-7462f2c2-4933-45a9-b2b0-38e2e0410643.png)
 ![image](https://user-images.githubusercontent.com/15305612/257632469-2b4615b3-b822-4f36-830d-c15f9d8b446b.png)
 ![image](https://user-images.githubusercontent.com/15305612/257632495-6ced0402-ed71-491a-84a7-633847e0ff89.png)
 
-- https://www.youtube.com/shorts/cjX_qp3xuYo
+- [YouTube Video](https://www.youtube.com/shorts/cjX_qp3xuYo)
 
 ## 2021.10.14 - Significant Syntax Change Planning
 Planning a major syntax change in order to accomodate type signatures.
@@ -271,18 +271,18 @@ The issue with doing a moving GC in WASM is that part of the process is updating
 Ok so I'm choosing to do the 'separate stack' approach. I now have like 75% of a plan for how to implement the runtime for the GC
 
 I think there's enough work involved with implementing all the associated features that the compiler could double in size
-https://github.com/dvtate/postfix-haskell/blob/master/planning/implementation/lm.md
+[https://github.com/dvtate/postfix-haskell/blob/master/planning/implementation/lm.md](https://github.com/dvtate/postfix-haskell/blob/master/planning/implementation/lm.md)
 
 Wrote the GC runtime in WASM by hand (see link) now I just have to test it and then I'll have to figure out how to implement recursive types
-https://github.com/dvtate/postfix-haskell/blob/master/lib/rt.wat
+[https://github.com/dvtate/postfix-haskell/blob/master/lib/rt.wat](https://github.com/dvtate/postfix-haskell/blob/master/lib/rt.wat)
 
 Everything's working :D
 
 Some general categories of bugs encountered:
 - endianness
-- forgetting to * sizeof(i32)
+- forgetting to `* sizeof(i32)`
 - doing math for i64 instead of i32
-- forgettting to i32.load
+- forgettting to `i32.load`
 - general typos
 - etc.
 
@@ -291,7 +291,7 @@ Some general categories of bugs encountered:
 
 ## 2021.12.13 - Mechanization
 I wrote a paper regarding this language for a class on programming language theory. 
-https://github.com/dvtate/PLT-coursework/blob/master/project/CS595_final_project.pdf
+[https://github.com/dvtate/PLT-coursework/blob/master/project/CS595_final_project.pdf](https://github.com/dvtate/PLT-coursework/blob/master/project/CS595_final_project.pdf)
 
 ## 2022.6.20 - Compile-time only types
 The type-system is now expanded with types for the compile-time only constructs in image 2 albiet with limited contexts
@@ -400,4 +400,4 @@ I don't forsee this language fulfilling my original goals (ie - bad fit for targ
 ## 2023.8.1 - About this devlog archive
 I started on a big demo in this language -- a raytracer. But I never was able to get it working and I honestly doubt that I ever will. This project was very fulfilling for me to work on. I learned a lot and wish I had a similar project in my life now that would challenge me to think and innovate. I leave this devlog archive as a way for people to look back at how the language came to be. 
 
-Please read this related blog post about the language: https://blog.dvtt.net/posts/ph.2022.5.6
+Please read this related blog post about the language: [https://blog.dvtt.net/posts/ph.2022.5.6](https://blog.dvtt.net/posts/ph.2022.5.6)
