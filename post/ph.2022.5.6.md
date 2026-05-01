@@ -1,11 +1,3 @@
----
-layout: post
-title: "Postfix Haskell 2022.5.6"
-date: 2022-05-06 19:15:00 -0500
-categories: [article,software,devlog]
-tags: [article,software,devlog,programming languages]
----
-
 # Postfix Haskell 2022.5.6
 
 For the past 2 years in my freetime I've been working on a [postfix, functional programming langauge which compiles to webassembly](https://github.com/dvtate/postfix-haskell). Admittedlty it still has a good ways to go before it's usable for my intended purposes and even further to go before it's production ready. But I've at least been able to use it to make [some small demos](https://github.com/dvtate/phlappy-bird).
@@ -26,10 +18,11 @@ Of course the most noticable thing is that the language is postfix, giving it a 
 
 ![Implementation of fizzbuzz in the language](https://www.wasm.builders/remoteimages/uploads/articles/jcqmwluohr2u5y401cib.png)
  
-I'm currently struggling with [how to add runtime closures into the language](https://github.com/dvtate/postfix-haskell/blob/master/planning/brainstorm/Closures.md) as the way I've designed the compiler makes it difficult to detect this when it's needed. Additionally I'm still not fully confident with [my design for enum types](https://github.com/dvtate/postfix-haskell/blob/master/planning/brainstorm/Enums.md).
+I'm currently struggling with [how to add runtime closures into the language](https://github.com/dvtate/postfix-haskell/blob/6a6c242d7c45259cd9c02f635c66f6193618c4e0/planning/implementation/closures.md) as the way I've designed the compiler makes it difficult to detect this when it's needed. Additionally I'm still not fully confident with [my design for enum types](https://github.com/dvtate/postfix-haskell/blob/master/planning/implementation/enums.md).
 
 Another, mostly solved, design challenge has actually come from WebAssembly itself. Beacuse locals and the stack are not stored in addressable linear memory (good for security, but bad for usability) it makes it challenging to create [a moving, tracing garbage collector](https://github.com/dvtate/postfix-haskell/blob/master/lib/rt.wat) as not only do we need to be able to see all the object pointers currently in use but we have to be able to change them without old addresses being used later on in the program. This required adding to the runtime two virtual stacks in [linear memory](https://github.com/dvtate/postfix-haskell/blob/master/planning/implementation/lm.md), one similar to function locals and another similar to the WASM stack for garbage collected object pointers.
 
 I've posted pretty regular updates as I developed this language to a twitter thread for those interested: https://twitter.com/hoffridder/status/1355760499057680395
+- **Update**: [This blog post](https://blog.dvtt.net/post/ph_dl) is a better source as some tweets were deleted, making the thread difficult to read.
 
 Anyways, I'm not really sure what I'm hoping to achieve with this post but I did feel like sharing after seeing that this community exists and maybe getting some feedback if anyone checks out the language, compiler, runtime, etc. that I can use once I get enough courage to jump back into working on it Or if anyone wants to contribute, send a pr or [reach out to me](https://dvtate.com)!
