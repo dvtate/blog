@@ -15,6 +15,7 @@ commonly used templating libraries, although with limited features.
 Put simply, [template processors](https://en.wikipedia.org/wiki/Template_processor) take a template and data as inputs and generate a document, program, etc.
 
 So for example, if you have a website where each user gets their own "about" page, you could use a template processor to generate this page for each user.
+{% raw %}
 ```html
 <ul>
     <li>Name: {{display_name}}</li>
@@ -35,26 +36,25 @@ std::string user_page(const User& user) {
     return page.render(data);
 } 
 ```
+{% endraw %}
 
 ### Existing Solutions
-There are many, mature templating engines with libraries for multiple languages that make development easy for most people.
+There are many mature template languages with libraries for multiple langauges that make development easy for most people.
+So, because this was a minor component of a bigger project, I started out using a library with a bunch of GitHub stars, a
+sophistocated template language, lots of features I didn't need, and some defaults I didn't like. But at least it worked.
 
-At first I started out using one but there were some things that made me roll my own solution.
-There are many mature template languages with libraries for multiple langauges that make development easy for most people. So, because this was a
-minor component of a bigger project, I started out using a library with a bunch of GitHub stars.
-
-Many template langauges are quite sophistocated and have lots of features. While I'm sure these can come in handy for advanced users, I really only
-needed the simple "find and replace" functionality... In fact, even that was more than what I needed because in the template processor I was using
-it escapes HTML characters by default which I didn't need. I wanted to "partially render" a template with constant data only to discover that there
-was no easy way to do this since the library automatically removes unused tags after reading the source code trying to find a workaround, I decided
-to just roll my own instead since my obsession with performance was not really aligned with the templating 
+Eventually I wanted to "partially render" a template with some global values so that they wouldn't have be rendered for
+each page. But according to the library maintainers there was no easy way to do that because it always removes unknown
+tags ... which I also didn't like. So, considering I was only using it to replace substrings I decided to just roll my own
+solution instead of using an ugly workaround.
 
 ## A Template Processor From Scratch
-Because making a template processor wasn't my main goal, its evolution took course slowly over the course of years.
+Because making a template processor wasn't my main goal, I threw something together quickly and made gradual improvements
+over time. I've tried to capture this process here as it includes some things most developers don't usually think about.
 
 ### Naive Substring Replacement
 So at first I started out with something really simple that replaces tags with substitutions in a string.
-
+{% raw %}
 ```cpp
 void replace_all(
 	std::string& haystack,
@@ -80,8 +80,8 @@ replace_all(ret, "{{ffffff}}", get_replacement(6) );
 replace_all(ret, "{{ggggggg}}", get_replacement(7) );
 return ret;
 ```
-
-And this worked fine but I knew there was a lot of room for optimizations.
+{% endraw %}
+And this was enough to remove the external dependency but I knew there was a lot of room for optimizations.
 
 Feel free to pause and think about how you'd go about optimizing this.
 
@@ -102,9 +102,9 @@ O( N * ( L * (M / L) * N ) )
 
 The first thing that stood out to me was that it shouldn't have to scan the entire template string for each substitution.
 
-
 ### Single-Pass Substitution
 So I wrote the following function that does a single pass instead.
+{% raw %}
 ```cpp
 template<class K, class V>
 std::string
@@ -129,7 +129,7 @@ match_found:
     return template_string;
 }
 ```
-
+{% endraw %}
 And this was much better.
 
 ```
@@ -141,15 +141,15 @@ O( N + M * L + M * N )
 ```
 
 But there were two things that stood out to me:
-1. std::string::replace could have to grow the string.
+1. `std::string::replace` could have to grow the string mutiple times.
     Even with exponential growth optimizations this can be really expensive, expecially for larger templates.
-2. Linear search over the replacement rules isn't ideal. std::map or std::unordered_map often give better performance.
+2. Linear search over the replacement rules isn't ideal. `std::map` or `std::unordered_map` would scale better.
 
 ### Pre-calculate Length + Hash Map
 So to address those two points I made a new function which first calculates how big the output string will be
 and then uses `reserve` to allocate exactly that much space before doing the substitutions. I also replaced
 the vector with std::unordered_map for O(1) lookups. The code looked something like this:
-
+{% raw %}
 ```cpp
 std::string mustache(
     const std::string_view template_string,
@@ -209,8 +209,7 @@ std::unordered_map<std::string_view, std::string_view> rules = {
 };
 std::string ret = mustache(templ, rules);
 ```
-
-This gives a theoretical performance that's still linear but should scale better:
+{% endraw %}
 ```
 N = template string length
 L = number of distinct tags
@@ -219,35 +218,33 @@ O( N + L + N + N * M )
 ~= O( M * N )
 ```
 
+This improved theoretical performance means it scales better, however, constructing a map is a lot more expensive
+than making a vector, so in some real-world use cases, this can actually give worse performance.
 
-And this definitely scales better, however, constructing a map is a lot more expensive than making a vector, so in some real-world use cases,
-this can actually give worse performance. All the template processor libraries I looked at also used unordered_map so this should have comparable
-performance to off-the-shelf solutions.
-(Unless they pre-parse the template string but we'll get to that later.)
-(Probably other ways to optimize this code)
+All the C++ template processor libraries I looked at also used unordered_map so this should have comparable performance to off-the-shelf solutions.
+- Unless they pre-parse the template string... but we'll get to that later
 
 ### Optimizing `constexpr` Tags
 However, looking at the assembly, the compiler wasn't leveraging the fact that the tags were known at compile time.
 
-It's my understanding that this is due to two limitations of constexpr:
-1. An expression is either constexpr or not, any run-time value makes it not constexpr
-2. Memory allocations can't happen at compile time, this limits their usage in constexpr
+It's my understanding that this is due to two limitations of `constexpr`:
+1. Memory allocations can't happen at compile time, this limits their usage in `constexpr`.
+2. An expression is either constexpr or not, any run-time value makes it not constexpr.
 
 These limitations could change in the future (there's already a proposal for constexpr parameters), but I want the performance now.
 
-Because memory allocations need to be avoided in constexpr (2), I can't just allocate nodes on the heap. Making an optimal flat hash map
+Because memory allocations need to be avoided in constexpr (1), I can't just allocate nodes on the heap. Making an optimal flat hash map
 is already extremely difficult, but making a constexpr-optimized one is even harder. So I decided to start with a flat binary search tree.
 
-(I later found out that there are some additional benefits to this and the lookup time ended up not mattering for most cases)
+(I later found out that there are some additional benefits to this)
 
-So in order to prevent mixing the constexpr tags with their runtime substitutions, I couldn't simply make a sorted array of pairs, but 
+In order to prevent mixing the constexpr tags with their runtime substitutions (2), I couldn't simply make a sorted array of pairs, but 
 I could have a constexpr function that sorts an array of tags and another one that determines the index of the tag in the sorted array using binary search.
-This index can then be used to construct the replacements array in the same order as the tag array.
+This index can then be used to construct the replacements array in the same order as the sorted tags array.
 
 Something like this:
 
 ```cpp
-
 /// Returns sorted version of given array
 template<std::ranges::random_access_range R>
 consteval R sort_tags(R&& tags) {
@@ -303,7 +300,7 @@ than even the vector pairs example from earlier.
 My compiler was even smart enough to inline get_replacements and construct the replacements array in order!
 
 The rendering algorithm is very similar to before but using `index` instead of unordered_map.
-
+{% raw %}
 ```cpp
     /**
      * Replace all {{tags}} in template_string with corresponding substitutions
@@ -368,7 +365,7 @@ The rendering algorithm is very similar to before but using `index` instead of u
         return ret;
     }
 ```
-
+{% endraw %}
 #### Making it Pretty
 Using this solution is a lot more cumbersome than the others, and because the tags are separated from their replacements
 it makes reading the code more painful too. To fix this I made some preprocessor macros.
@@ -420,8 +417,9 @@ we can pre-parse the template with the following benefits:
 - Remove the tags from the template string, potentially saving memory
 - Make the size calculation algorithm faster
 
-The following struct was defined to handle parsed templates
-```
+The following struct was defined to handle parsed templates:
+{% raw %}
+```cpp
     /// When the template is constant we can remember where replacements need to occur
     struct ParsedTemplate {
         /// Template string with template params removed
@@ -547,6 +545,7 @@ The following struct was defined to handle parsed templates
         }
     };
 ```
+{% endraw %}
 
 And the accompanying helper macros:
 ```cpp
@@ -583,17 +582,23 @@ O( N + M )
 
 I'm sure there's still some room for optimizations, but for now I'm happy.
 
+## Conclusion
+My code is fast and I am happy.
 
 ## Future Directions
 
 ### Features
 Calling this a templating engine is a bit of an overstatement, as it only supports basic substitution.
 However, if you're okay with not having everything in a single template, this library can be used to accomplish
-everything the alternatives do.
+everything the alternatives do, altho the easy way to do it might not be the most optimal.
 
-- Want escaped HTML characters? just pass your substitutions through a `MinSSR::escape_html_characters()`.
-- Want to render a list of objects? Just make another template and call it in a loop.
-    - Some room for optimization tho... so maybe worth working on this.
+- Want escaped HTML characters? Pass your substitutions through a `MinSSR::escape_html_characters()`.
+- Want to render a list of objects? Make another template and render it in a loop.
+- Want conditional rendering? Make another template and render it in an if statement.
+
+I've made programming languages so I should be able to add some features without impacting
+performance outside of pre-processing the templates, but so far I haven't really needed any of them, so not
+sure if it's worth it.
 
 ### Ease of Use
 This still feels kinda clunky to me, it feels weird having to use macros but I can't think of a way to make it better.
