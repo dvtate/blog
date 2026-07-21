@@ -1,4 +1,4 @@
-# Micro-optimized Template Processing in C++
+# Optimized Template Processing in C++
 > 2026.7.21
 
 In this video/blog post I'll walk you though the process of how I created a highly-optimized C++ template processor.
@@ -302,68 +302,68 @@ My compiler was even smart enough to inline get_replacements and construct the r
 The rendering algorithm is very similar to before but using `index` instead of unordered_map.
 {% raw %}
 ```cpp
-    /**
-     * Replace all {{tags}} in template_string with corresponding substitutions
-     * @param template_string mustache template string
-     * @param sorted_tags sorted array of tags to replace with corresponding substitutions
-     * @param substitutions replacements to apply,
-     *      if one larger than sorted_tags, the last value will replace unknown values
-     * @return new string with replacements
-     * @remark tags with index greater than
-     */
-    template<
-        std::ranges::random_access_range R1,
-        std::ranges::random_access_range R2>
-    [[nodiscard]] constexpr std::string mustache(
-        const std::string_view template_string,
-        const R1& sorted_tags,
-        const R2& substitutions
-    ) {
-        // index of {{ , key + value
-        std::vector<std::pair<size_t, ssize_t>> replacements;
-        replacements.reserve(sorted_tags.size()); // reasonable starting point
+/**
+    * Replace all {{tags}} in template_string with corresponding substitutions
+    * @param template_string mustache template string
+    * @param sorted_tags sorted array of tags to replace with corresponding substitutions
+    * @param substitutions replacements to apply,
+    *      if one larger than sorted_tags, the last value will replace unknown values
+    * @return new string with replacements
+    * @remark tags with index greater than
+    */
+template<
+    std::ranges::random_access_range R1,
+    std::ranges::random_access_range R2>
+[[nodiscard]] constexpr std::string mustache(
+    const std::string_view template_string,
+    const R1& sorted_tags,
+    const R2& substitutions
+) {
+    // index of {{ , key + value
+    std::vector<std::pair<size_t, ssize_t>> replacements;
+    replacements.reserve(sorted_tags.size()); // reasonable starting point
 
-        std::size_t len = template_string.size();
-        std::size_t i = 0;
-        while ((i = template_string.find("{{", i)) != std::string::npos) {
-            const std::size_t start = i + 2;
-            const std::size_t end = template_string.find("}}", start);
-            if (end == std::string_view::npos) [[unlikely]] {
-                break;
-            }
-            const auto tag = template_string.substr(start, end - start);
-            const auto idx = index(sorted_tags, tag);
-            if (idx < substitutions.size()) {
-                replacements.emplace_back(i, idx == sorted_tags.size() ? -tag.size() - 1 : idx);
-                len -= 4; // {{ }}
-                len -= tag.size();
-                len += substitutions[idx].size();
-            }
-
-            // put i after the }}
-            i = end + 2;
+    std::size_t len = template_string.size();
+    std::size_t i = 0;
+    while ((i = template_string.find("{{", i)) != std::string::npos) {
+        const std::size_t start = i + 2;
+        const std::size_t end = template_string.find("}}", start);
+        if (end == std::string_view::npos) [[unlikely]] {
+            break;
+        }
+        const auto tag = template_string.substr(start, end - start);
+        const auto idx = index(sorted_tags, tag);
+        if (idx < substitutions.size()) {
+            replacements.emplace_back(i, idx == sorted_tags.size() ? -tag.size() - 1 : idx);
+            len -= 4; // {{ }}
+            len -= tag.size();
+            len += substitutions[idx].size();
         }
 
-        std::string ret;
-        ret.reserve(len);
-        i = 0;
-        for (const auto& p : replacements) {
-            const std::size_t l = p.first - i;
-            ret.append(template_string, i, l);
-            if (p.second < 0)
-                ret.append(substitutions[substitutions.size() - 1]);
-            else
-                ret.append(substitutions[p.second]);
-            i += l;
-            i += 4; // {{}}
-            if (p.second < 0)
-                i -= p.second + 1;
-            else
-                i += sorted_tags[p.second].size();
-        }
-        ret.append(template_string, i, -1);
-        return ret;
+        // put i after the }}
+        i = end + 2;
     }
+
+    std::string ret;
+    ret.reserve(len);
+    i = 0;
+    for (const auto& p : replacements) {
+        const std::size_t l = p.first - i;
+        ret.append(template_string, i, l);
+        if (p.second < 0)
+            ret.append(substitutions[substitutions.size() - 1]);
+        else
+            ret.append(substitutions[p.second]);
+        i += l;
+        i += 4; // {{}}
+        if (p.second < 0)
+            i -= p.second + 1;
+        else
+            i += sorted_tags[p.second].size();
+    }
+    ret.append(template_string, i, -1);
+    return ret;
+}
 ```
 {% endraw %}
 #### Making it Pretty
@@ -420,130 +420,130 @@ we can pre-parse the template with the following benefits:
 The following struct was defined to handle parsed templates:
 {% raw %}
 ```cpp
-    /// When the template is constant we can remember where replacements need to occur
-    struct ParsedTemplate {
-        /// Template string with template params removed
-        std::string stripped_template;
+/// When the template is constant we can remember where replacements need to occur
+struct ParsedTemplate {
+    /// Template string with template params removed
+    std::string stripped_template;
 
-        /// Locations + substitution index to replace in the template string
-        std::vector<std::pair<size_t, ssize_t>> substitution_points;
+    /// Locations + substitution index to replace in the template string
+    std::vector<std::pair<size_t, ssize_t>> substitution_points;
 
-        /**
-         * Populate the parsed template with the corresponding runtime values
-         * @param substitutions list of corresponding replacements w/ default handler at the end
-         * @return replaced string
-         * @remark unknown value must be either the last element of the array or the template must not
-         *  have any unknown values (ie - parsed with leave_unknown = true)
-         */
-        template<std::ranges::random_access_range R>
-        constexpr std::string process(
-            const R& substitutions
-        ) const {
-            // Calculate size
-            size_t len = stripped_template.size();
-            for (const auto& p : substitution_points)
-                if (p.second < 0)
-                    len += substitutions[substitutions.size() - 1].size();
-                else
-                    len += substitutions[p.second].size();
+    /**
+        * Populate the parsed template with the corresponding runtime values
+        * @param substitutions list of corresponding replacements w/ default handler at the end
+        * @return replaced string
+        * @remark unknown value must be either the last element of the array or the template must not
+        *  have any unknown values (ie - parsed with leave_unknown = true)
+        */
+    template<std::ranges::random_access_range R>
+    constexpr std::string process(
+        const R& substitutions
+    ) const {
+        // Calculate size
+        size_t len = stripped_template.size();
+        for (const auto& p : substitution_points)
+            if (p.second < 0)
+                len += substitutions[substitutions.size() - 1].size();
+            else
+                len += substitutions[p.second].size();
 
-            // Construct string
-            std::string ret;
-            ret.reserve(len);
-            size_t prev = 0;
-            for (const auto& p : substitution_points) {
-                const auto l = p.first - prev;
-                ret.append(stripped_template, prev, l);
-                if (p.second < 0)
-                    ret.append(substitutions[substitutions.size() - 1]);
-                else
-                    ret.append(substitutions[p.second]);
-                prev = p.first;
-            }
-            ret.append(stripped_template, prev);
-            return ret;
+        // Construct string
+        std::string ret;
+        ret.reserve(len);
+        size_t prev = 0;
+        for (const auto& p : substitution_points) {
+            const auto l = p.first - prev;
+            ret.append(stripped_template, prev, l);
+            if (p.second < 0)
+                ret.append(substitutions[substitutions.size() - 1]);
+            else
+                ret.append(substitutions[p.second]);
+            prev = p.first;
         }
+        ret.append(stripped_template, prev);
+        return ret;
+    }
 
-        /**
-         * Parse a template
-         * @param template_string input template
-         * @param sorted_tags sorted array of tags used in the template
-         * @param leave_unknown will unknown tags be ignored (true) or replaced (false)?
-         * @return
-         */
-        template<std::ranges::random_access_range R>
-        static inline constexpr
-        ParsedTemplate parse_mustache(
-            const std::string_view template_string,
-            const R& sorted_tags,
-            const bool leave_unknown = true
-        ) {
-            // TODO improved algorithm: copy+edit template string
+    /**
+        * Parse a template
+        * @param template_string input template
+        * @param sorted_tags sorted array of tags used in the template
+        * @param leave_unknown will unknown tags be ignored (true) or replaced (false)?
+        * @return
+        */
+    template<std::ranges::random_access_range R>
+    static inline constexpr
+    ParsedTemplate parse_mustache(
+        const std::string_view template_string,
+        const R& sorted_tags,
+        const bool leave_unknown = true
+    ) {
+        // TODO improved algorithm: copy+edit template string
 
-            // Find all substitution points in template string
-            ParsedTemplate ret;
-            size_t prev = 0;
-            size_t i = 0;
-            size_t index_offset = 0;
-            while ((i = template_string.find("{{", prev)) != std::string::npos) {
-                index_offset += i - prev;
+        // Find all substitution points in template string
+        ParsedTemplate ret;
+        size_t prev = 0;
+        size_t i = 0;
+        size_t index_offset = 0;
+        while ((i = template_string.find("{{", prev)) != std::string::npos) {
+            index_offset += i - prev;
 
-                const size_t start = i + 2;
-                const size_t end = template_string.find("}}", start);
-                if (end == std::string_view::npos) [[unlikely]] {
-                    index_offset += template_string.size() - i;
-                    break;
-                }
-                const auto l = end - start;
-                const auto tag = template_string.substr(start, l);
-                const auto idx = index(sorted_tags, tag);
+            const size_t start = i + 2;
+            const size_t end = template_string.find("}}", start);
+            if (end == std::string_view::npos) [[unlikely]] {
+                index_offset += template_string.size() - i;
+                break;
+            }
+            const auto l = end - start;
+            const auto tag = template_string.substr(start, l);
+            const auto idx = index(sorted_tags, tag);
 
-                if (idx == sorted_tags.size()) {
-                    if (leave_unknown) {
-                        // Not a substitution, include tag
-                        index_offset += l + 4;
-                    } else {
-                        // Replace unknown
-                        ret.substitution_points.emplace_back(index_offset, -1 - (ssize_t)l); // default handler
-                    }
+            if (idx == sorted_tags.size()) {
+                if (leave_unknown) {
+                    // Not a substitution, include tag
+                    index_offset += l + 4;
                 } else {
-                    // Substitution
-                    ret.substitution_points.emplace_back(index_offset, idx);
+                    // Replace unknown
+                    ret.substitution_points.emplace_back(index_offset, -1 - (ssize_t)l); // default handler
                 }
-
-                // Put i after the }}
-                prev = end + 2;
+            } else {
+                // Substitution
+                ret.substitution_points.emplace_back(index_offset, idx);
             }
 
-            // TODO resize_and_overwrite
-            ret.stripped_template.reserve(index_offset);
-            i = 0;              // index in original template string
-            index_offset = 0;   // index in stripped string
-            for (auto& p : ret.substitution_points) {
-                // End of last -> start of current
-                const std::size_t l = p.first - index_offset;
-
-                // Copy non-param part of template
-                ret.stripped_template.append(template_string, i, l);
-
-                // Don't copy param into stripped string
-                index_offset += l;
-
-                // Translated index
-                i += l; // non-param part
-                i += 4; // {{}}
-                i += p.second < 0
-                    ? -p.second - 1
-                    : sorted_tags[p.second].size();
-            }
-
-            // Include end
-            if (i < template_string.size())
-                ret.stripped_template.append(template_string, i);
-
-            return ret;
+            // Put i after the }}
+            prev = end + 2;
         }
-    };
+
+        // TODO resize_and_overwrite
+        ret.stripped_template.reserve(index_offset);
+        i = 0;              // index in original template string
+        index_offset = 0;   // index in stripped string
+        for (auto& p : ret.substitution_points) {
+            // End of last -> start of current
+            const std::size_t l = p.first - index_offset;
+
+            // Copy non-param part of template
+            ret.stripped_template.append(template_string, i, l);
+
+            // Don't copy param into stripped string
+            index_offset += l;
+
+            // Translated index
+            i += l; // non-param part
+            i += 4; // {{}}
+            i += p.second < 0
+                ? -p.second - 1
+                : sorted_tags[p.second].size();
+        }
+
+        // Include end
+        if (i < template_string.size())
+            ret.stripped_template.append(template_string, i);
+
+        return ret;
+    }
+};
 ```
 {% endraw %}
 
