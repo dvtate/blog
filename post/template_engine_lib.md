@@ -160,12 +160,12 @@ std::string mustache(
     std::vector<std::pair<size_t, Replacement>> replacements;
     replacements.reserve(rules.size()); // reasonable starting point
 
-	// First calculate the output string length
-    std::size_t len = template_string.size();
-    std::size_t i = 0;
+    // First calculate the output string length
+    size_t len = template_string.size();
+    size_t i = 0;
     while ((i = template_string.find("{{", i)) != std::string::npos) {
-        const std::size_t start = i + 2;
-        const std::size_t end = template_string.find("}}", start);
+        const size_t start = i + 2;
+        const size_t end = template_string.find("}}", start);
         const auto tag = template_string.substr(start, end - start);
         auto it = rules.find(tag);
         if (it != rules.end()) {
@@ -179,14 +179,14 @@ std::string mustache(
         i = end + 2;
     }
 
-	// Allocate exactly enough space for the string
+    // Allocate exactly enough space for the string
     std::string ret;
     ret.reserve(len);
 
-	// Perform the substitutions
+    // Perform the substitutions
     i = 0;
     for (const auto& p : replacements) {
-        const std::size_t l = p.first - i;
+        const size_t l = p.first - i;
         ret.append(template_string, i, l);
         ret.append(p.second->second);
         i += l;
@@ -287,7 +287,7 @@ replacements[index(tags, "b")] = get_replacement(2);
 // ... compiler output equivalent to:
 
 static const std::array<std::string_view, 3> tags = { "a", "b", "c" };
-const std::array<std::string_view, 4> replacements = {
+const std::array<std::string_view, 3> replacements = {
     std::string_view(get_replacements(1)),
     std::string_view(get_replacements(2)),
     std::string_view(get_replacements(3))
@@ -307,9 +307,9 @@ The rendering algorithm is very similar to before but using `index` instead of u
     * @param template_string mustache template string
     * @param sorted_tags sorted array of tags to replace with corresponding substitutions
     * @param substitutions replacements to apply,
-    *      if one larger than sorted_tags, the last value will replace unknown values
+    *   if one larger than sorted_tags, the last value will replace unknown values
+    *   otherwise (same size as sorted_tags), unknown values will be ignored
     * @return new string with replacements
-    * @remark tags with index greater than
     */
 template<
     std::ranges::random_access_range R1,
@@ -410,10 +410,21 @@ std::string ret = MIN_SSR_MUSTACHE(templ, MY_SSR_RULES);
 ret = MIN_SSR_MUSTACHE(templ, MY_SSR_RULES, ""); // remove unknown tags
 ```
 
+This gives nearly perfect performance:
+```
+N = template string length
+L = number of distinct tags
+M = number of tags to replace
+O( N + M log L + M log M )
+```
+
+If I were to do the same constexpr optimizations with a hash map the performance could be
+`O( N + M + M * M log M )` but that would be very difficult and not worth it for me (see next section)... So I'll leave that as an exercise for the reader.
+
 ### Optimizing Constant Templates
 Usually templates aren't changed while the program is running. So if we optimize for this case,
 we can pre-parse the template with the following benefits:
-- Handle all the lookups ahead of time, the tags array isn't even needed to render the page.
+- Handle all the lookups ahead of time, the tags array isn't needed to render the template.
 - Remove the tags from the template string, potentially saving memory
 - Make the size calculation algorithm faster
 
@@ -429,12 +440,12 @@ struct ParsedTemplate {
     std::vector<std::pair<size_t, ssize_t>> substitution_points;
 
     /**
-        * Populate the parsed template with the corresponding runtime values
-        * @param substitutions list of corresponding replacements w/ default handler at the end
-        * @return replaced string
-        * @remark unknown value must be either the last element of the array or the template must not
-        *  have any unknown values (ie - parsed with leave_unknown = true)
-        */
+     * Populate the parsed template with the corresponding runtime values
+     * @param substitutions list of corresponding replacements w/ default handler at the end
+     * @return replaced string
+     * @remark unknown value must be either the last element of the array or the template must not
+     *  have any unknown values (ie - parsed with leave_unknown = true)
+     */
     template<std::ranges::random_access_range R>
     constexpr std::string process(
         const R& substitutions
@@ -465,12 +476,11 @@ struct ParsedTemplate {
     }
 
     /**
-        * Parse a template
-        * @param template_string input template
-        * @param sorted_tags sorted array of tags used in the template
-        * @param leave_unknown will unknown tags be ignored (true) or replaced (false)?
-        * @return
-        */
+     * Parse a template
+     * @param template_string input template
+     * @param sorted_tags sorted array of tags used in the template
+     * @param leave_unknown will unknown tags be ignored (true) or replaced (false)?
+     */
     template<std::ranges::random_access_range R>
     static inline constexpr
     ParsedTemplate parse_mustache(
@@ -479,6 +489,7 @@ struct ParsedTemplate {
         const bool leave_unknown = true
     ) {
         // TODO improved algorithm: copy+edit template string
+        // TODO this should probably be the constructor
 
         // Find all substitution points in template string
         ParsedTemplate ret;
@@ -580,7 +591,7 @@ M = number of tags to replace
 O( N + M )
 ```
 
-I'm sure there's still some room for optimizations, but for now I'm happy.
+I'm sure there's still some room for optimizations, but nothing obvious or subtantial.
 
 ## Conclusion
 My code is fast and I am happy.
