@@ -3,6 +3,11 @@ I don't often have the energy to sit down and write a blog post but when I do I'
 
 ------
 
+[Optimized Template Processing in C++](post/template_engine_lib.md)
+2026.7.21
+
+How I created a C++ template processing library that performs dramatically better than the alternatives.
+
 [The history of Corki Bot](post/corki_bot)
 2025.01.22
 

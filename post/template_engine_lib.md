@@ -587,6 +587,9 @@ My code is fast and I am happy.
 
 ## Future Directions
 
+### Publishing as a Separate Library
+I'll probably make a dedicated repo for this library soon and will update this post once I do.
+
 ### Features
 Calling this a templating engine is a bit of an overstatement, as it only supports basic substitution.
 However, if you're okay with not having everything in a single template, this library can be used to accomplish
